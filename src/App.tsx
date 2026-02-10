@@ -15,6 +15,11 @@ import Register from "./pages/Register";
 import UserProfile from "./pages/UserProfile";
 import Dashboard from "./pages/Dashboard";
 import ReviewSubmission from "./pages/ReviewSubmission";
+import TenantDashboard from "./pages/tenant/TenantDashboard";
+import MoveInHelper from "./pages/tenant/MoveInHelper";
+import LandlordDashboard from "./pages/landlord/LandlordDashboard";
+import ClaimProperty from "./pages/landlord/ClaimProperty";
+import ListProperty from "./pages/landlord/ListProperty";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +43,13 @@ const App = () => (
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/review" element={<ReviewSubmission />} />
+          {/* Tenant routes */}
+          <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+          <Route path="/tenant/move-in" element={<MoveInHelper />} />
+          {/* Landlord routes */}
+          <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
+          <Route path="/landlord/claim" element={<ClaimProperty />} />
+          <Route path="/landlord/list-property" element={<ListProperty />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
