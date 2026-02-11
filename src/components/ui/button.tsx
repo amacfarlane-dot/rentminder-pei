@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-success text-success-foreground hover:bg-success/90",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -17,7 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         success: "hero-gradient text-success-foreground hover:opacity-90 shadow-lg",
         accent: "bg-accent text-accent-foreground hover:bg-accent/90 font-semibold",
-        hero: "navy-gradient text-primary-foreground hover:opacity-90 shadow-lg font-semibold",
+        hero: "hero-gradient text-success-foreground hover:opacity-90 shadow-lg font-semibold",
       },
       size: {
         default: "h-10 px-4 py-2",
