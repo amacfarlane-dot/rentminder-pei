@@ -7,17 +7,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { properties } from "@/data/mockData";
-import { ArrowLeft, Upload, CheckCircle } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
+// Mock: properties the current user has confirmed living in
+const confirmedProperties = [
+  { propertyId: "p1", address: "42 University Ave, Charlottetown", hasReview: false },
+  { propertyId: "p2", address: "15 Queen St, Charlottetown", hasReview: true },
+  { propertyId: "p3", address: "88 Water St, Summerside", hasReview: false },
+];
+
 const ReviewSubmission = () => {
   const [searchParams] = useSearchParams();
-  const propertyId = searchParams.get("property") || "";
+  const preselectedId = searchParams.get("property") || "";
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [selectedPropertyId, setSelectedPropertyId] = useState(preselectedId);
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -27,14 +43,33 @@ const ReviewSubmission = () => {
     value: 0,
     safety: 0,
   });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [postAnonymously, setPostAnonymously] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const property = properties.find((p) => p.id === propertyId);
+  const selectedConfirmed = confirmedProperties.find(
+    (cp) => cp.propertyId === selectedPropertyId
+  );
+  const alreadyReviewed = selectedConfirmed?.hasReview ?? false;
+  const property = properties.find((p) => p.id === selectedPropertyId);
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedPropertyId) {
+      toast({ title: "Please select a property", variant: "destructive" });
+      return;
+    }
+    if (alreadyReviewed) {
+      toast({
+        title: "Already reviewed",
+        description: "You can only submit one review per property. Please edit your existing review instead.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (rating === 0) {
       toast({ title: "Please select a rating", variant: "destructive" });
       return;
@@ -47,6 +82,15 @@ const ReviewSubmission = () => {
       });
       return;
     }
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms required",
+        description: "You must agree to the Terms & Conditions to submit a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -67,9 +111,14 @@ const ReviewSubmission = () => {
             <h1 className="text-2xl font-bold font-body text-foreground mb-2">
               Review Submitted!
             </h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-2">
               Thank you for helping the PEI rental community. You earned 50 points!
             </p>
+            {postAnonymously && (
+              <p className="text-sm text-muted-foreground mb-4">
+                Your review will be displayed as <span className="font-semibold">Verified Anonymous Renter</span>.
+              </p>
+            )}
             <div className="flex gap-3 justify-center">
               <Button asChild>
                 <Link to="/profile">View Profile</Link>
@@ -93,13 +142,43 @@ const ReviewSubmission = () => {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-bold font-body text-foreground mb-1">Write a Review</h1>
-          {property && (
-            <p className="text-muted-foreground mb-6">
-              Reviewing: {property.address}, {property.city}
-            </p>
-          )}
+          <p className="text-muted-foreground mb-6">
+            Share your rental experience to help other PEI tenants.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Property selection */}
+            <Card>
+              <CardContent className="p-5">
+                <Label className="mb-3 block">Select Property *</Label>
+                <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a property you've lived in" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {confirmedProperties.map((cp) => (
+                      <SelectItem key={cp.propertyId} value={cp.propertyId}>
+                        {cp.address}
+                        {cp.hasReview ? " (reviewed)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {alreadyReviewed && (
+                  <div className="flex items-center gap-2 mt-3 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>
+                      You've already reviewed this property.{" "}
+                      <Link to="/profile" className="underline font-medium">
+                        Edit your review
+                      </Link>{" "}
+                      instead.
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Overall rating */}
             <Card>
               <CardContent className="p-5">
@@ -176,7 +255,52 @@ const ReviewSubmission = () => {
               </Button>
             </div>
 
-            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {/* Anonymous posting */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="anonymous"
+                    checked={postAnonymously}
+                    onCheckedChange={(checked) => setPostAnonymously(checked === true)}
+                  />
+                  <div className="grid gap-1 leading-none">
+                    <Label htmlFor="anonymous" className="cursor-pointer font-medium">
+                      Post anonymously
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Your name will appear as <span className="font-semibold">"Verified Anonymous Renter"</span> on the property page. Your identity remains protected.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                  />
+                  <div className="grid gap-1 leading-none">
+                    <Label htmlFor="terms" className="cursor-pointer font-medium">
+                      I agree to the Terms & Conditions *
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      By submitting, I confirm this review is truthful and based on my personal experience.{" "}
+                      <Link to="/terms" className="text-primary underline">
+                        Read full terms
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading || alreadyReviewed}
+            >
               {loading ? "Submitting..." : "Submit Review (+50 points)"}
             </Button>
           </form>

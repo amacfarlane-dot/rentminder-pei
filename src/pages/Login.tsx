@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Mail, Lock } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import logo from "@/assets/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -39,9 +40,7 @@ const Login = () => {
           className="w-full max-w-md"
         >
           <div className="text-center mb-8">
-            <div className="h-12 w-12 rounded-xl navy-gradient mx-auto mb-4 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src={logo} alt="RentMinder" className="h-14 mx-auto mb-4" />
             <h1 className="text-2xl font-bold font-body text-foreground">Welcome back</h1>
             <p className="text-muted-foreground mt-1">Sign in to your RentMinder account</p>
           </div>
