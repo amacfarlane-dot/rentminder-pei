@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Shield } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Footer = () => (
   <footer className="border-t bg-card mt-auto">
@@ -7,10 +7,7 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-3">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg navy-gradient">
-              <Shield className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold font-display text-primary">RentMinder</span>
+            <img src={logo} alt="RentMinder" className="h-10 w-auto" />
           </Link>
           <p className="text-sm text-muted-foreground">
             Rental transparency for Prince Edward Island. Know before you rent.
