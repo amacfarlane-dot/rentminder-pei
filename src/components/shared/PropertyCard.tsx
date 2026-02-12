@@ -1,12 +1,19 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bed, Bath, MapPin, DollarSign } from "lucide-react";
+import { Bed, Bath, MapPin, DollarSign, GitCompareArrows } from "lucide-react";
 import StarRating from "./StarRating";
 import type { Property } from "@/data/mockData";
 import { motion } from "framer-motion";
 
-const PropertyCard = ({ property, index = 0 }: { property: Property; index?: number }) => {
+interface PropertyCardProps {
+  property: Property;
+  index?: number;
+  isComparing?: boolean;
+  onToggleCompare?: () => void;
+}
+
+const PropertyCard = ({ property, index = 0, isComparing, onToggleCompare }: PropertyCardProps) => {
   const typeLabels: Record<string, string> = {
     apartment: "Apartment",
     house: "House",
@@ -22,7 +29,7 @@ const PropertyCard = ({ property, index = 0 }: { property: Property; index?: num
       transition={{ duration: 0.4, delay: index * 0.08 }}
     >
       <Link to={`/property/${property.id}`}>
-        <Card className="card-hover overflow-hidden group">
+        <Card className={`card-hover overflow-hidden group ${isComparing ? "ring-2 ring-primary" : ""}`}>
           {/* Image placeholder */}
           <div className="h-40 bg-secondary relative overflow-hidden">
             <div className="absolute inset-0 navy-gradient opacity-20 group-hover:opacity-30 transition-opacity" />
@@ -36,6 +43,14 @@ const PropertyCard = ({ property, index = 0 }: { property: Property; index?: num
                 <DollarSign className="h-3 w-3 mr-0.5" />{property.currentRent}/mo
               </Badge>
             </div>
+            {onToggleCompare && (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleCompare(); }}
+                className={`absolute top-3 right-3 p-1.5 rounded-md transition-colors ${isComparing ? "bg-primary text-primary-foreground" : "bg-card/80 backdrop-blur-sm text-muted-foreground hover:text-foreground"}`}
+              >
+                <GitCompareArrows className="h-4 w-4" />
+              </button>
+            )}
             <div className="flex items-center justify-center h-full text-muted-foreground/40">
               <MapPin className="h-12 w-12" />
             </div>

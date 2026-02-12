@@ -22,9 +22,12 @@ import {
   CheckCircle,
   ExternalLink,
   MessageSquare,
+  GraduationCap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { peiSchoolZones } from "@/data/school-zones";
+import { standardAmenities } from "@/data/property-details";
 
 const ListProperty = () => {
   const { toast } = useToast();
@@ -43,6 +46,14 @@ const ListProperty = () => {
   const [internetIncluded, setInternetIncluded] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
   const [allowInquiries, setAllowInquiries] = useState(true);
+  const [selectedSchoolZones, setSelectedSchoolZones] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+
+  const toggleSchoolZone = (id: string) =>
+    setSelectedSchoolZones((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
+
+  const toggleAmenity = (key: string) =>
+    setSelectedAmenities((prev) => prev.includes(key) ? prev.filter((a) => a !== key) : [...prev, key]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,6 +253,61 @@ const ListProperty = () => {
                   <p className="text-sm text-muted-foreground">Upload listing photos</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Amenities */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base font-body text-foreground">Amenities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                {standardAmenities.map((am) => (
+                  <div key={am.key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`am-${am.key}`}
+                      checked={selectedAmenities.includes(am.key)}
+                      onCheckedChange={() => toggleAmenity(am.key)}
+                    />
+                    <Label htmlFor={`am-${am.key}`} className="text-sm font-normal cursor-pointer">{am.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* School Zones */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-body text-foreground">
+                <GraduationCap className="h-5 w-5 text-primary" />School Zones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-3">Select all schools in the catchment area for this property.</p>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                {peiSchoolZones.map((sz) => (
+                  <div key={sz.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`sz-${sz.id}`}
+                      checked={selectedSchoolZones.includes(sz.id)}
+                      onCheckedChange={() => toggleSchoolZone(sz.id)}
+                    />
+                    <Label htmlFor={`sz-${sz.id}`} className="text-sm font-normal cursor-pointer flex-1">
+                      {sz.name} <span className="text-xs text-muted-foreground">({sz.grades} · {sz.city})</span>
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedSchoolZones.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {selectedSchoolZones.map((id) => {
+                    const sz = peiSchoolZones.find((s) => s.id === id);
+                    return sz ? <Badge key={id} variant="secondary" className="text-xs">{sz.name}</Badge> : null;
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
