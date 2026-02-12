@@ -2,9 +2,14 @@ import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import StarRating from "@/components/shared/StarRating";
 import { properties, landlords, reviews } from "@/data/mockData";
+import { getPropertyDetails, standardAmenities } from "@/data/property-details";
+import { peiSchoolZones } from "@/data/school-zones";
+import { renovations, getIRACAnalysis } from "@/data/renovations";
+import { workOrders, getAvgResponseTime, statusLabels } from "@/data/work-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Bed,
   Bath,
@@ -16,6 +21,9 @@ import {
   Calendar,
   ArrowLeft,
   PenLine,
+  GraduationCap,
+  Wrench,
+  Hammer,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -39,6 +47,13 @@ const PropertyDetail = () => {
   const landlord = landlords.find((l) => l.id === property.landlordId);
   const propertyReviews = reviews.filter((r) => r.propertyId === property.id);
   const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
+  const details = getPropertyDetails(property.id);
+  const amenities = details?.amenities.map((k) => standardAmenities.find((a) => a.key === k)).filter(Boolean) ?? [];
+  const schools = details?.schoolZoneIds.map((sid) => peiSchoolZones.find((s) => s.id === sid)).filter(Boolean) ?? [];
+  const propRenos = renovations.filter((r) => r.propertyId === property.id);
+  const iracAnalysis = getIRACAnalysis(propRenos);
+  const propWorkOrders = workOrders.filter((o) => o.propertyId === property.id && o.publiclyVisible);
+  const avgResponse = getAvgResponseTime(workOrders.filter((o) => o.propertyId === property.id));
 
   return (
     <Layout>
@@ -184,6 +199,108 @@ const PropertyDetail = () => {
                 </Card>
               )}
             </motion.div>
+
+            {/* Amenities */}
+            {amenities.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base font-body text-foreground">Amenities</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {amenities.map((am: any) => (
+                        <Badge key={am.key} variant="secondary">{am.label}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* School Zones */}
+            {schools.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base font-body text-foreground">
+                      <GraduationCap className="h-5 w-5 text-primary" />School Zones
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {schools.map((s: any) => (
+                        <div key={s.id} className="flex justify-between items-center py-1.5 border-b last:border-0">
+                          <div>
+                            <p className="text-sm font-medium">{s.name}</p>
+                            <p className="text-xs text-muted-foreground">{s.board} · {s.address}</p>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">{s.grades}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Resolved Work Orders */}
+            {propWorkOrders.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base font-body text-foreground">
+                      <Wrench className="h-5 w-5 text-primary" />Maintenance History
+                      {avgResponse !== null && <span className="text-xs font-normal text-muted-foreground ml-auto">Avg response: {avgResponse}h</span>}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {propWorkOrders.map((wo) => (
+                        <div key={wo.id} className="py-2 border-b last:border-0">
+                          <div className="flex justify-between items-start">
+                            <p className="text-sm font-medium">{wo.title}</p>
+                            <Badge variant="secondary" className="text-xs">{statusLabels[wo.status]}</Badge>
+                          </div>
+                          {wo.resolutionNotes && <p className="text-xs text-muted-foreground mt-1">{wo.resolutionNotes}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Renovations */}
+            {propRenos.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base font-body text-foreground">
+                      <Hammer className="h-5 w-5 text-primary" />Renovations &amp; Upgrades
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {propRenos.map((r) => (
+                      <div key={r.id} className="py-2 border-b last:border-0">
+                        <p className="text-sm font-medium">{r.title}</p>
+                        <p className="text-xs text-muted-foreground">{r.description}</p>
+                        <div className="flex gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">${r.cost.toLocaleString()}</Badge>
+                          <Badge variant="secondary" className="text-xs">{r.completedDate}</Badge>
+                          {r.iracEligible && <Badge className="bg-success/10 text-success text-xs">IRAC Eligible</Badge>}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-2">
+                      <p className="text-xs text-muted-foreground mb-1">IRAC Capital Improvement Progress</p>
+                      <Progress value={iracAnalysis.percentOfThreshold} className="h-2" />
+                      <p className="text-xs text-muted-foreground mt-1">${iracAnalysis.eligibleSpent.toLocaleString()} / ${iracAnalysis.threshold.toLocaleString()}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </div>
 
           {/* Sidebar */}

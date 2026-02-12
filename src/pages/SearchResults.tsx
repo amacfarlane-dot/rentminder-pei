@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import PropertyCard from "@/components/shared/PropertyCard";
 import { properties } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Search, SlidersHorizontal, X, GitCompareArrows } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useComparisonTray } from "@/hooks/useComparisonTray";
 
 const propertyTypes = ["All", "Apartment", "House", "Condo", "Duplex", "Townhouse"];
 const sortOptions = [
@@ -25,6 +27,7 @@ const SearchResults = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
+  const { compareIds, toggleCompare, removeFromCompare, clearCompare, isInCompare, count } = useComparisonTray();
 
   const filtered = useMemo(() => {
     let result = [...properties];
@@ -103,65 +106,28 @@ const SearchResults = () => {
               animate={{ opacity: 1, height: "auto" }}
               className="mt-4 space-y-4"
             >
-              {/* Property type filter */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Property Type
-                </label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Property Type</label>
                 <div className="flex flex-wrap gap-2">
                   {propertyTypes.map((type) => (
-                    <Button
-                      key={type}
-                      size="sm"
-                      variant={selectedType === type ? "default" : "outline"}
-                      onClick={() => setSelectedType(type)}
-                    >
+                    <Button key={type} size="sm" variant={selectedType === type ? "default" : "outline"} onClick={() => setSelectedType(type)}>
                       {type}
                     </Button>
                   ))}
                 </div>
               </div>
-
-              {/* Price range */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Price Range: ${priceRange[0]} – ${priceRange[1]}
-                </label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Price Range: ${priceRange[0]} – ${priceRange[1]}</label>
                 <div className="flex gap-3">
-                  <Input
-                    type="number"
-                    value={priceRange[0]}
-                    onChange={(e) =>
-                      setPriceRange([Number(e.target.value), priceRange[1]])
-                    }
-                    placeholder="Min"
-                    className="w-28"
-                  />
-                  <Input
-                    type="number"
-                    value={priceRange[1]}
-                    onChange={(e) =>
-                      setPriceRange([priceRange[0], Number(e.target.value)])
-                    }
-                    placeholder="Max"
-                    className="w-28"
-                  />
+                  <Input type="number" value={priceRange[0]} onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])} placeholder="Min" className="w-28" />
+                  <Input type="number" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])} placeholder="Max" className="w-28" />
                 </div>
               </div>
-
-              {/* Sort */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Sort By
-                </label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Sort By</label>
                 <div className="flex flex-wrap gap-2">
                   {sortOptions.map((opt) => (
-                    <Button
-                      key={opt.value}
-                      size="sm"
-                      variant={sortBy === opt.value ? "default" : "outline"}
-                      onClick={() => setSortBy(opt.value)}
-                    >
+                    <Button key={opt.value} size="sm" variant={sortBy === opt.value ? "default" : "outline"} onClick={() => setSortBy(opt.value)}>
                       {opt.label}
                     </Button>
                   ))}
@@ -181,19 +147,61 @@ const SearchResults = () => {
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((property, i) => (
-              <PropertyCard key={property.id} property={property} index={i} />
+              <PropertyCard
+                key={property.id}
+                property={property}
+                index={i}
+                isComparing={isInCompare(property.id)}
+                onToggleCompare={() => toggleCompare(property.id)}
+              />
             ))}
           </div>
         ) : (
           <div className="text-center py-20">
             <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground font-body">No properties found</h3>
-            <p className="text-muted-foreground mt-1">
-              Try adjusting your search or filters
-            </p>
+            <p className="text-muted-foreground mt-1">Try adjusting your search or filters</p>
           </div>
         )}
       </div>
+
+      {/* Comparison tray */}
+      <AnimatePresence>
+        {count > 0 && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-50"
+          >
+            <div className="container py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <GitCompareArrows className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium">{count} selected</span>
+                <div className="flex gap-1.5">
+                  {compareIds.map((id) => {
+                    const p = properties.find((pr) => pr.id === id);
+                    return p ? (
+                      <Badge key={id} variant="secondary" className="text-xs">
+                        {p.address.split(",")[0]}
+                        <button onClick={() => removeFromCompare(id)} className="ml-1"><X className="h-3 w-3" /></button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={clearCompare}>Clear</Button>
+                <Button size="sm" disabled={count < 2} asChild>
+                  <Link to={`/compare?ids=${compareIds.join(",")}`}>
+                    Compare ({count})
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 };

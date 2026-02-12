@@ -20,6 +20,7 @@ import MoveInHelper from "./pages/tenant/MoveInHelper";
 import LandlordDashboard from "./pages/landlord/LandlordDashboard";
 import ClaimProperty from "./pages/landlord/ClaimProperty";
 import ListProperty from "./pages/landlord/ListProperty";
+import PropertyComparison from "./pages/PropertyComparison";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
           <Route path="/landlord/claim" element={<ClaimProperty />} />
           <Route path="/landlord/list-property" element={<ListProperty />} />
+          <Route path="/compare" element={<PropertyComparison />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
