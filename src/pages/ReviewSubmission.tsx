@@ -43,6 +43,13 @@ const ReviewSubmission = () => {
     value: 0,
     safety: 0,
   });
+  const [rentalStartDate, setRentalStartDate] = useState("");
+  const [leaseEndDate, setLeaseEndDate] = useState("");
+  const [heatIncluded, setHeatIncluded] = useState(false);
+  const [electricityIncluded, setElectricityIncluded] = useState(false);
+  const [parkingIncluded, setParkingIncluded] = useState(false);
+  const [internetIncluded, setInternetIncluded] = useState(false);
+  const [furnished, setFurnished] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -179,7 +186,65 @@ const ReviewSubmission = () => {
               </CardContent>
             </Card>
 
-            {/* Overall rating */}
+            {/* Lease details */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-body text-foreground">
+                  Lease Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="rentalStart">Rental Start Date *</Label>
+                    <Input
+                      id="rentalStart"
+                      type="date"
+                      value={rentalStartDate}
+                      onChange={(e) => setRentalStartDate(e.target.value)}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="leaseEnd">Lease End Date</Label>
+                    <Input
+                      id="leaseEnd"
+                      type="date"
+                      value={leaseEndDate}
+                      onChange={(e) => setLeaseEndDate(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-2 block">What was included in your rent?</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ri-heat" checked={heatIncluded} onCheckedChange={(c) => setHeatIncluded(!!c)} />
+                      <Label htmlFor="ri-heat" className="text-sm font-normal cursor-pointer">Heat</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ri-elec" checked={electricityIncluded} onCheckedChange={(c) => setElectricityIncluded(!!c)} />
+                      <Label htmlFor="ri-elec" className="text-sm font-normal cursor-pointer">Electricity</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ri-parking" checked={parkingIncluded} onCheckedChange={(c) => setParkingIncluded(!!c)} />
+                      <Label htmlFor="ri-parking" className="text-sm font-normal cursor-pointer">Parking</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ri-internet" checked={internetIncluded} onCheckedChange={(c) => setInternetIncluded(!!c)} />
+                      <Label htmlFor="ri-internet" className="text-sm font-normal cursor-pointer">Internet</Label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id="ri-furnished" checked={furnished} onCheckedChange={(c) => setFurnished(!!c)} />
+                  <Label htmlFor="ri-furnished" className="text-sm font-normal cursor-pointer">Unit was furnished</Label>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-5">
                 <Label className="mb-3 block">Overall Rating *</Label>
